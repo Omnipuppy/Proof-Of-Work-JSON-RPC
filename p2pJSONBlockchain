@@ -1,0 +1,76 @@
+const crypto = require('crypto');
+const { MongoClient } = require('mongodb');
+
+class Block {
+  constructor(index, data, previousHash) {
+    this.index = index;
+    this.timestamp = new Date().toISOString();
+    this.data = data;
+    this.previousHash = previousHash;
+    this.hash = this.calculateHash();
+  }
+
+  calculateHash() {
+    const dataString = JSON.stringify(this.data);
+    const combinedString = `${this.index}${this.timestamp}${dataString}${this.previousHash}`;
+    const hash = crypto.createHash('sha256').update(combinedString).digest('hex');
+    return hash;
+  }
+}
+
+class Blockchain {
+  constructor() {
+    this.chain = [this.createGenesisBlock()];
+  }
+
+  createGenesisBlock() {
+    return new Block(0, {}, "0");
+  }
+
+  getLatestBlock() {
+    return this.chain[this.chain.length - 1];
+  }
+
+  addBlock(data) {
+    const previousBlock = this.getLatestBlock();
+    const newIndex = previousBlock.index + 1;
+    const newBlock = new Block(newIndex, data, previousBlock.hash);
+    this.chain.push(newBlock);
+  }
+
+  isValid() {
+    for (let i = 1; i < this.chain.length; i++) {
+      const currentBlock = this.chain[i];
+      const previousBlock = this.chain[i - 1];
+
+      if (currentBlock.hash !== currentBlock.calculateHash()) {
+        return false;
+      }
+
+      if (currentBlock.previousHash !== previousBlock.hash) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+// Example usage
+const blockchain = new Blockchain();
+
+// Add a block to the blockchain
+const blockData = {
+  p2pEntry: {
+    proofOfWork: '0123456789abcdef',
+    digitalAsset: {
+      name: 'My Asset',
+      description: 'This is my digital asset',
+      price: 10.99
+    }
+  }
+};
+blockchain.addBlock(blockData);
+
+// Check if the blockchain is valid
+console.log(`Is the blockchain valid? ${blockchain.isValid()}`);
