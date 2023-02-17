@@ -1,0 +1,49 @@
+// Import necessary packages
+const express = require('express');
+const crypto = require('crypto');
+
+// Create an Express app
+const app = express();
+
+// Define the Proof-of-Work algorithm
+function proofOfWork(data, difficulty) {
+  let nonce = 0;
+  let hash = '';
+
+  while (hash.substring(0, difficulty) !== '0'.repeat(difficulty)) {
+    nonce++;
+    hash = crypto
+      .createHash('sha256')
+      .update(data + nonce)
+      .digest('hex');
+  }
+
+  return { nonce, hash };
+}
+
+// Define the API endpoint for the Proof-of-Work function
+app.get('/proof-of-work', (req, res) => {
+  const { data, difficulty } = req.query;
+
+  // Check if the required parameters are present
+  if (!data || !difficulty) {
+    res.status(400).json({ error: 'Missing required parameters' });
+    return;
+  }
+
+  // Validate the input parameters
+  if (isNaN(parseInt(difficulty, 10))) {
+    res.status(400).json({ error: 'Invalid difficulty value' });
+    return;
+  }
+
+  // Perform the Proof-of-Work
+  const { nonce, hash } = proofOfWork(data, parseInt(difficulty, 10));
+
+  res.json({ nonce, hash });
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Proof-of-Work server listening on port 3000');
+});
