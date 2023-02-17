@@ -1,0 +1,34 @@
+const Peer = require('peerjs');
+const ProofOfWorkP2P = require('./ProofOfWorkP2P');
+
+const proofOfWorkP2P = new ProofOfWorkP2P();
+
+const peer = new Peer();
+
+peer.on('open', id => {
+  console.log('Connected to P2P network with ID:', id);
+});
+
+proofOfWorkP2P.server.on('connection', conn => {
+  console.log('New peer connected:', conn.peer);
+});
+
+proofOfWorkP2P.server.on('data', data => {
+  console.log('Received data:', data);
+});
+
+async function handleFileUpload(file) {
+  const fileReader = new FileReader();
+  fileReader.onload = async event => {
+    const data = event.target.result;
+    const hash = await proofOfWorkP2P.sendProofOfWork(data, 3);
+    console.log('Proof of work hash:', hash);
+    proofOfWorkP2P.broadcast(hash);
+  };
+  fileReader.readAsText(file);
+}
+
+document.querySelector('#fileInput').addEventListener('change', event => {
+  const file = event.target.files[0];
+  handleFileUpload(file);
+});
