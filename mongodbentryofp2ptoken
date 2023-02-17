@@ -1,0 +1,11 @@
+const { MongoClient } = require('mongodb');
+
+async function saveTokenizedData(data) {
+  const client = await MongoClient.connect('mongodb://localhost:27017');
+  const db = client.db('mydatabase');
+  const collection = db.collection('mycollection');
+  const tokenizedData = { hash: tokenize(data), data: data };
+  const result = await collection.insertOne(tokenizedData);
+  client.close();
+  return result.insertedId;
+}
