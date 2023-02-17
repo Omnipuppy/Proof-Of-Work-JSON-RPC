@@ -1,0 +1,44 @@
+import React, { useState } from 'react';
+
+function BlockInspector(props) {
+  const [selectedBlock, setSelectedBlock] = useState(null);
+
+  const handleBlockClick = (block) => {
+    setSelectedBlock(block);
+  }
+
+  const renderBlock = (block) => {
+    return (
+      <div key={block.hash} onClick={() => handleBlockClick(block)}>
+        <h3>Block {block.index}</h3>
+        <p>Hash: {block.hash}</p>
+        <p>Previous Hash: {block.previousHash}</p>
+        <p>Timestamp: {block.timestamp}</p>
+        <p>Data: {JSON.stringify(block.data)}</p>
+        <p>Nonce: {block.nonce}</p>
+      </div>
+    );
+  }
+
+  const renderSelectedBlock = () => {
+    if (selectedBlock) {
+      return (
+        <div>
+          <h2>Selected Block</h2>
+          {renderBlock(selectedBlock)}
+        </div>
+      );
+    }
+    return null;
+  }
+
+  return (
+    <div>
+      <h1>Blockchain Inspector</h1>
+      {props.chain.map((block) => renderBlock(block))}
+      {renderSelectedBlock()}
+    </div>
+  );
+}
+
+export default BlockInspector;
