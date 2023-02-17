@@ -1,0 +1,28 @@
+const axios = require('axios');
+const { jsonRpc } = require('jsonrpc-lite');
+
+const endpoint = 'http://localhost:3000';
+
+async function sendProofOfWork(data, difficulty) {
+  const payload = { data, difficulty };
+  const request = jsonRpc.request(1, 'proof-of-work', payload);
+  const response = await axios.post(endpoint, request);
+
+  const parsedResponse = jsonRpc.parseObject(response.data);
+  if (parsedResponse.type === 'success') {
+    return parsedResponse.payload.result;
+  } else {
+    throw new Error(parsedResponse.payload.message);
+  }
+}
+
+async function main() {
+  try {
+    const result = await sendProofOfWork('hello', 3);
+    console.log(result);
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+main();
